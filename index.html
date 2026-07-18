@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment Growth Simulator</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f6f8;
+      color: #1f2937;
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #6b7280;
+      font-size: 16px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 25px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .inputs h2 {
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 7px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .result-box {
+      background: #f8fafc;
+      padding: 18px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .result-box p {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .result-box h2 {
+      font-size: 22px;
+    }
+
+    .chart-container {
+      height: 400px;
+    }
+
+    .disclaimer {
+      text-align: center;
+      margin-top: 20px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .results {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>Investment Growth Simulator</h1>
+      <p>Explore how compound interest and monthly investing can grow your wealth.</p>
+    </header>
+
+    <div class="dashboard">
+
+      <div class="card inputs">
+        <h2>Investment Inputs</h2>
+
+        <div class="input-group">
+          <label for="initial">Initial Investment ($)</label>
+          <input type="number" id="initial" value="10000" />
+        </div>
+
+        <div class="input-group">
+          <label for="monthly">Monthly Contribution ($)</label>
+          <input type="number" id="monthly" value="500" />
+        </div>
+
+        <div class="input-group">
+          <label for="returnRate">Annual Return (%)</label>
+          <input type="number" id="returnRate" value="8" step="0.1" />
+        </div>
+
+        <div class="input-group">
+          <label for="years">Investment Period (Years)</label>
+          <input type="number" id="years" value="20" />
+        </div>
+
+        <button onclick="calculateInvestment()">
+          Calculate Growth
+        </button>
+      </div>
+
+      <div>
+
+        <div class="results">
+
+          <div class="card result-box">
+            <p>Final Value</p>
+            <h2 id="finalValue">$0</h2>
+          </div>
+
+          <div class="card result-box">
+            <p>Total Contributions</p>
+            <h2 id="contributions">$0</h2>
+          </div>
+
+          <div class="card result-box">
+            <p>Investment Growth</p>
+            <h2 id="growth">$0</h2>
+          </div>
+
+        </div>
+
+        <div class="card chart-container">
+          <canvas id="investmentChart"></canvas>
+        </div>
+
+      </div>
+
+    </div>
+
+    <p class="disclaimer">
+      This simulator is for educational purposes only and does not provide financial advice.
+    </p>
+
+  </div>
+
+  <script>
+
+    let investmentChart;
+
+    function formatMoney(number) {
+      return number.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0
+      });
+    }
+
+    function calculateInvestment() {
+
+      const initialInvestment =
+        Number(document.getElementById("initial").value);
+
+      const monthlyContribution =
+        Number(document.getElementById("monthly").value);
+
+      const annualReturn =
+        Number(document.getElementById("returnRate").value) / 100;
+
+      const years =
+        Number(document.getElementById("years").value);
+
+      const monthlyRate = annualReturn / 12;
+
+      let balance = initialInvestment;
+
+      let labels = [];
+      let balances = [];
+      let totalContributions = [];
+
+      let contributed = initialInvestment;
+
+      for (let year = 0; year <= years; year++) {
+
+        if (year > 0) {
+
+          for (let month = 0; month < 12; month++) {
+
+            balance =
+              balance * (1 + monthlyRate) +
+              monthlyContribution;
+
+            contributed += monthlyContribution;
+          }
+        }
+
+        labels.push(`Year ${year}`);
+        balances.push(Math.round(balance));
+        totalContributions.push(Math.round(contributed));
+      }
+
+      const finalValue = balance;
+      const growth = finalValue - contributed;
+
+      document.getElementById("finalValue").textContent =
+        formatMoney(finalValue);
+
+      document.getElementById("contributions").textContent =
+        formatMoney(contributed);
+
+      document.getElementById("growth").textContent =
+        formatMoney(growth);
+
+      if (investmentChart) {
+        investmentChart.destroy();
+      }
+
+      const ctx =
+        document.getElementById("investmentChart");
+
+      investmentChart = new Chart(ctx, {
+
+        type: "line",
+
+        data: {
+          labels: labels,
+
+          datasets: [
+
+            {
+              label: "Portfolio Value",
+              data: balances,
+              borderWidth: 3,
+              tension: 0.3
+            },
+
+            {
+              label: "Total Contributions",
+              data: totalContributions,
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0.3
+            }
+
+          ]
+        },
+
+        options: {
+
+          responsive: true,
+
+          maintainAspectRatio: false,
+
+          plugins: {
+            legend: {
+              position: "top"
+            }
+          },
+
+          scales: {
+
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return "$" + value.toLocaleString();
+                }
+              }
+            }
+
+          }
+
+        }
+
+      });
+
+    }
+
+    calculateInvestment();
+
+  </script>
+
+</body>
+</html>
