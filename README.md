@@ -22,6 +22,30 @@ The application calculates the estimated future portfolio value and visually com
 - Comparison between total contributions and investment growth
 - Responsive design for desktop and mobile devices
 
+## How to Use
+
+1. Enter your starting investment amount.
+2. Enter the amount you plan to contribute every month.
+3. Enter an estimated annual return percentage.
+4. Choose how many years you plan to invest.
+5. Click the **Calculate Growth** button.
+6. Review the results, including:
+   - Final Portfolio Value
+   - Total Contributions
+   - Investment Growth
+7. Use the interactive chart to compare how your total contributions and estimated portfolio value grow over time.
+
+### Example
+
+You can experiment with:
+
+- Initial Investment: $10,000
+- Monthly Contribution: $500
+- Annual Return: 8%
+- Investment Period: 20 years
+
+Try changing the numbers to see how different investment assumptions affect long-term growth.
+
 ## Technologies Used
 
 - HTML5
